@@ -1,0 +1,38 @@
+{
+  "name": "hello-angular",
+  "version": "1.0.0",
+  "description": "Minimal Angular 2 app",
+  "scripts": {
+    "start": "concurrently \"gulp\" \"node server.js\" -n \"gulp,node\" -p name -k"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@angular/common": "2.3.0",
+    "@angular/compiler": "2.3.0",
+    "@angular/compiler-cli": "2.3.0",
+    "@angular/core": "2.3.0",
+    "@angular/forms": "2.3.0",
+    "@angular/http": "2.3.0",
+    "@angular/platform-browser": "2.3.0",
+    "@angular/platform-browser-dynamic": "2.3.0",
+    "@angular/platform-server": "2.3.0",
+    "@angular/router": "3.3.0",
+    "compression": "^1.6.2",
+    "core-js": "^2.4.1",
+    "express": "^4.14.0",
+    "reflect-metadata": "^0.1.8",
+    "rxjs": "5.0.0-rc.4",
+    "zone.js": "^0.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.46",
+    "concurrently": "^3.1.0",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-sass": "^3.0.0",
+    "rollup": "^0.36.4",
+    "rollup-plugin-commonjs": "^5.0.5",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-uglify": "^1.0.1",
+    "typescript": "~2.0.10"
+  }
+}
