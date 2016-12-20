@@ -5,10 +5,11 @@ let commonjs = require('rollup-plugin-commonjs');
 let uglify = require('rollup-plugin-uglify');
 let sass = require('gulp-sass');
 let exec = require('child_process').exec;
+let argv = require('yargs').argv;
+
+let prodMode = argv.prod;
 
 //Build TODOs
-//minify js in prod
-//minify sass in prod
 //global Sass
 //vendor css
 //vendor JS. e.g. moment
@@ -22,8 +23,10 @@ let exec = require('child_process').exec;
 //Live reload
 
 function styles() {
+    let sassOptions = {outputStyle: prodMode ? 'compressed' : 'nested'};
+
     return gulp.src('src/**/*.scss')
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass(sassOptions).on('error', sass.logError))
         .pipe(gulp.dest('src'));
 }
 
@@ -33,20 +36,19 @@ function ngc() {
 
 let rollUpBundle;
 function rollupApp() {
+    let devPlugins = [
+        nodeResolve({jsnext: true, module: true}),
+        commonjs({include: 'node_modules/rxjs/**'})
+    ];
+
+    let prodPlugins = [...devPlugins, uglify()];
+
     let rollupConfig = {
         entry: 'src/main.js',
         cache: rollUpBundle,
-        plugins: [
-            nodeResolve({jsnext: true, module: true}),
-            commonjs({
-                include: 'node_modules/rxjs/**',
-            })
-            //Only uglify in prod as it adds time
-            /*,
-             uglify()*/
-        ],
+        plugins: prodMode ? prodPlugins : devPlugins,
         onwarn: function (msg) {
-            if(!msg.includes("The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten")) {
+            if (!msg.includes("The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten")) {
                 console.error(msg);
             }
         }
@@ -68,7 +70,7 @@ gulp.task(styles);
 gulp.task(ngc);
 gulp.task(rollupApp);
 
-gulp.task('default',  gulp.series(js, function watch() {
+gulp.task('default', gulp.series(js, function watch() {
     gulp.watch('src/**/*.ts', js);
     gulp.watch('src/**/*.scss', styles);
 }));
