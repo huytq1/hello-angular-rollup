@@ -6,10 +6,10 @@ let path = require('path');
 let compress = require('compression');
 app.use(compress());
 
-app.use(express.static(path.join(__dirname, '.')));
+app.use(express.static(path.join(__dirname, 'dist')));
 
 app.all('/*', function (req, res) {
-    res.sendFile('index.html', {root: __dirname});
+    res.sendFile('index.html', {root: path.join(__dirname, 'dist')});
 });
 
 let server = app.listen(process.env.PORT || 5000, function () {

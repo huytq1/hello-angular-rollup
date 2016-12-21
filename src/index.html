@@ -3,12 +3,15 @@
 <head>
     <title>Ahead of time compilation</title>
     <meta charset="UTF-8">
-    <script src="node_modules/core-js/client/shim.min.js"></script>
-    <script src="node_modules/zone.js/dist/zone.js"></script>
     <script>window.module = {};</script>
+    <!-- inject:css -->
+    <!-- endinject -->
 </head>
 <body>
     <my-app>Loading...</my-app>
 </body>
-<script src="dist/app.js"></script>
+
+<!-- inject:js -->
+<!-- endinject -->
+
 </html>

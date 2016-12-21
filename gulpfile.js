@@ -4,8 +4,12 @@ let nodeResolve = require('rollup-plugin-node-resolve');
 let commonjs = require('rollup-plugin-commonjs');
 let uglify = require('rollup-plugin-uglify');
 let sass = require('gulp-sass');
+let concat = require('gulp-concat');
+let rev = require('gulp-rev');
+let inject = require('gulp-inject');
 let exec = require('child_process').exec;
 let argv = require('yargs').argv;
+let del = require('del');
 
 let prodMode = argv.prod;
 
@@ -14,11 +18,8 @@ let prodMode = argv.prod;
 //vendor css
 //vendor JS. e.g. moment
 //cache bust js and css
-//move everything to dist. e.g. index
 //css source maps
 //js source maps
-//clean css on build
-//clean aot on build
 //clean dist on build
 //Live reload
 
@@ -57,20 +58,41 @@ function rollupApp() {
     return rollup(rollupConfig)
         .then((bundle) => {
             rollUpBundle = bundle;
+
             return bundle.write({
                 format: 'iife',
-                dest: 'dist/app.js'
+                dest: `dist/app-${Date.now().toString(36)}.js`
             });
         });
 }
 
-let js = gulp.series(styles, ngc, rollupApp);
+function globalJs() {
+    return gulp.src([
+        'node_modules/core-js/client/shim.min.js',
+        'node_modules/zone.js/dist/zone.min.js'
+    ])
+        .pipe(concat('global.js'))
+        .pipe(rev())
+        .pipe(gulp.dest('dist'));
+}
+
+function index() {
+    let srcStream = gulp.src(['dist/global*.js', 'dist/app*.js'], {read: false});
+
+    return gulp.src('src/index.html')
+        .pipe(inject(srcStream, {addRootSlash: false, ignorePath: 'dist'}))
+        .pipe(gulp.dest('dist'));
+}
 
 gulp.task(styles);
 gulp.task(ngc);
-gulp.task(rollupApp);
+gulp.task('rollupApp', gulp.series(() => del('dist/app-*.js'), rollupApp));
+gulp.task('globalJs', gulp.series(() => del('dist/global-*.js'), globalJs));
+//TODO: encapsulate the clean and rollup in an function so we don't need to call it as a string
+let appJs = gulp.series(styles, ngc, 'rollupApp');
+gulp.task(index);
 
-gulp.task('default', gulp.series(js, function watch() {
-    gulp.watch('src/**/*.ts', js);
+gulp.task('default', gulp.series(gulp.parallel(appJs, globalJs), index, function watch() {
+    gulp.watch('src/**/*.ts', appJs);
     gulp.watch('src/**/*.scss', styles);
 }));
