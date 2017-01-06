@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import moment from 'moment';
 
 @Component({
     moduleId: module.id,
@@ -16,7 +17,7 @@ export class AppComponent {
     heroes = ['Magneta', 'Bombasto', 'Magma', 'Tornado'];
 
     constructor() {
-        console.log('initializing app conponent');
+        this.heroes.push(moment().format());
     }
 
     toggleHeading() {

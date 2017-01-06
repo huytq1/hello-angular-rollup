@@ -19,6 +19,7 @@ let prodMode = argv.prod;
 //css source maps
 //js source maps
 //Live reload
+//exit on error in build mode. not in watch mode
 
 function componentStyles() {
     let sassOptions = {outputStyle: prodMode ? 'compressed' : 'nested'};
@@ -28,13 +29,17 @@ function componentStyles() {
         .pipe(gulp.dest('src'));
 }
 
-function ngc() {
-    return exec('"node_modules/.bin/ngc" -p "tsconfig.json"');
+function ngc(done) {
+    exec('"node_modules/.bin/ngc" -p "tsconfig.json"', function(error, stdout, stderr) {
+        stdout && console.log(stdout);
+        stderr && console.error(stderr);
+        done();
+    });
 }
 
 let rollUpBundle;
 let rollupApp = gulp.series(
-    function cleanGlobalJs() {return del('dist/app*.js')},
+    function cleanRollupJs() {return del('dist/app*.js')},
     function buildRollupApp() {
         let devPlugins = [
             nodeResolve({jsnext: true, module: true}),
@@ -113,11 +118,13 @@ gulp.task('globalSass', globalSass);
 gulp.task('index', index);
 
 let appJs = gulp.series(componentStyles, ngc, rollupApp);
-let build = gulp.series(clean, gulp.parallel(appJs, globalJs), index);
+let build = gulp.series(clean, gulp.parallel(appJs, globalJs, globalSass), index);
 
 gulp.task('default', gulp.series(build, function watch() {
-    gulp.watch('src/**/*.ts', gulp.series(ngc, rollupApp, index));
-    gulp.watch(['src/**/*.scss', '!src/globalSass/**'], gulp.series(componentStyles, index));
+    let componentStylePaths = ['src/**/*.scss', '!src/globalSass/**'];
+    let componentTemplatePaths = ['src/**/*.html', '!src/index.html'];
+
+    gulp.watch(['src/**/*.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(componentStyles, ngc, rollupApp, index));
     gulp.watch('src/globalSass/**/*.scss', gulp.series(globalSass, index));
     gulp.watch('src/index.html', index);
 }));
