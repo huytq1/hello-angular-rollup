@@ -18,9 +18,7 @@ let prodMode = argv.prod;
 
 //Build TODOs
 //vendor css
-//vendor JS. e.g. moment
 //css source maps
-//js source maps
 //Live reload
 //exit on error in build mode. not in watch mode
 
@@ -74,7 +72,8 @@ let rollupApp = gulp.series(
 
                 return bundle.write({
                     format: 'iife',
-                    dest: `dist/app-${Date.now().toString(36)}.js`
+                    dest: `dist/app-${Date.now().toString(36)}.js`,
+                    sourceMap: prodMode ? false : 'inline'
                 });
             });
     }
