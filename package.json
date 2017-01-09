@@ -22,6 +22,8 @@
     "express": "^4.14.0",
     "moment": "^2.17.1",
     "reflect-metadata": "^0.1.8",
+    "rollup-plugin-angular": "^0.4.3",
+    "rollup-plugin-typescript": "^0.8.1",
     "rxjs": "5.0.0-rc.4",
     "zone.js": "^0.7.2"
   },
