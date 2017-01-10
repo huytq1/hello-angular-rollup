@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import moment from 'moment';
 
 @Component({
+    //TODO: can this moduleId be removed?
     moduleId: module.id,
     selector: 'my-app',
     templateUrl: 'app.component.html',

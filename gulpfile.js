@@ -13,6 +13,7 @@ let exec = require('child_process').exec;
 let argv = require('yargs').argv;
 let del = require('del');
 let typescript = require('typescript');
+let browserSync = require('browser-sync').create();
 
 let prodMode = argv.prod;
 
@@ -21,6 +22,7 @@ let prodMode = argv.prod;
 //css source maps
 //Live reload
 //exit on error in build mode. not in watch mode
+//Clean aot and generated files in src
 
 function componentStyles() {
     let sassOptions = {outputStyle: prodMode ? 'compressed' : 'nested'};
@@ -73,7 +75,7 @@ let rollupApp = gulp.series(
                 return bundle.write({
                     format: 'iife',
                     dest: `dist/app-${Date.now().toString(36)}.js`,
-                    sourceMap: prodMode ? false : 'inline'
+                    sourceMap: !prodMode
                 });
             });
     }
@@ -138,7 +140,11 @@ gulp.task('default', gulp.series(build, function watch() {
     let componentStylePaths = ['src/**/*.scss', '!src/globalSass/**'];
     let componentTemplatePaths = ['src/**/*.html', '!src/index.html'];
 
-    gulp.watch(['src/**/*.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(appJs, index));
-    gulp.watch('src/globalSass/**/*.scss', gulp.series(globalSass, index));
-    gulp.watch('src/index.html', index);
+    gulp.watch(['src/**/*.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(appJs, index/*, browserSync.reload*/));
+    gulp.watch('src/globalSass/**/*.scss', gulp.series(globalSass, index/*, browserSync.reload*/));
+    gulp.watch('src/index.html', index/*, browserSync.reload*/);
+
+    // browserSync.init({
+    //     server: "./dist"
+    // });
 }));
