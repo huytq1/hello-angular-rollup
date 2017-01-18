@@ -20,7 +20,6 @@ let prodMode = argv.prod;
 //Build TODOs
 //vendor css
 //css source maps
-//Live reload
 //exit on error in build mode. not in watch mode
 //Clean aot and generated files in src
 
@@ -42,15 +41,16 @@ function ngc(done) {
 
 let rollUpBundle;
 let rollupApp = gulp.series(
-    function cleanRollupJs() {return del('dist/app*.js')},
+    function cleanRollupJs() {return del(['dist/app*.js', 'dist/app*.js.map'])},
     function buildRollupApp() {
         let sharedPlugins = [
-            nodeResolve({jsnext: true, module: true}),
+            nodeResolve({jsnext: true}),
             commonjs({include: 'node_modules/rxjs/**'})
         ];
 
         let devPlugins = [
             rollupAngular(),
+            //TODO: figure out why logs from typescript aren't showing up
             rollupTypescript({typescript: typescript}),
             ...sharedPlugins
         ];
@@ -59,12 +59,14 @@ let rollupApp = gulp.series(
 
         let rollupConfig = {
             entry: prodMode ? 'src/main.prod.js': 'src/main.dev.ts',
-            cache: rollUpBundle,
+            //cache: rollUpBundle,
+            //treeshake: false,
             plugins: prodMode ? prodPlugins : devPlugins,
-            onwarn: function (msg) {
-                if (!msg.includes("The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten")) {
-                    console.error(msg);
+            onwarn: function (warning) {
+                if(warning.code === 'THIS_IS_UNDEFINED') {
+                    return;
                 }
+                console.warn('rollupwarn', warning.message);
             }
         };
 
@@ -120,6 +122,11 @@ function clean() {
     return del('dist');
 }
 
+function reloadBrowser(done) {
+    browserSync.reload();
+    done();
+}
+
 gulp.task('componentStyles', componentStyles);
 gulp.task('ngc', ngc);
 gulp.task('rollupApp', rollupApp);
@@ -140,11 +147,11 @@ gulp.task('default', gulp.series(build, function watch() {
     let componentStylePaths = ['src/**/*.scss', '!src/globalSass/**'];
     let componentTemplatePaths = ['src/**/*.html', '!src/index.html'];
 
-    gulp.watch(['src/**/*.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(appJs, index/*, browserSync.reload*/));
-    gulp.watch('src/globalSass/**/*.scss', gulp.series(globalSass, index/*, browserSync.reload*/));
-    gulp.watch('src/index.html', index/*, browserSync.reload*/);
+    gulp.watch(['src/**/*.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(appJs, index, reloadBrowser));
+    gulp.watch('src/globalSass/**/*.scss', gulp.series(globalSass, index, reloadBrowser));
+    gulp.watch('src/index.html', gulp.series(index, reloadBrowser));
 
-    // browserSync.init({
-    //     server: "./dist"
-    // });
+    browserSync.init(null, {
+        proxy: 'localhost:5000'
+    });
 }));
