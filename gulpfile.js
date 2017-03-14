@@ -200,7 +200,7 @@ gulp.task('default', gulp.series(build, function watch() {
     let componentStylePaths = ['src/**/*.scss', '!src/globalSass/**'];
     let componentTemplatePaths = ['src/**/*.html', '!src/index.html'];
 
-    gulp.watch(['src/**/*.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(appJs, index, reloadBrowser));
+    gulp.watch(['src/**/*.ts', '!src/vendor.ts', ...componentStylePaths, ...componentTemplatePaths], gulp.series(appJs, index, reloadBrowser));
     gulp.watch('src/globalSass/**/*.scss', gulp.series(globalSass, index, reloadBrowser));
     gulp.watch('src/index.html', gulp.series(index, reloadBrowser));
 
